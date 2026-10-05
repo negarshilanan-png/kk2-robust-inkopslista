@@ -13,7 +13,8 @@ while (true)
     Console.WriteLine("5. Avsluta");
     Console.Write("Välj: ");
 
-    int choice = int.Parse(Console.ReadLine());
+int choice; 
+    if (!int.TryParse(Console.ReadLine(), out int choice))
 
     if (choice == 1)
     {
@@ -26,7 +27,7 @@ while (true)
     else if (choice == 2)
     {
         Console.Write("Nummer: ");
-        int number = int.Parse(Console.ReadLine());
+        int number = int.TryParse(Console.ReadLine(), );
         list.RemoveAt(number);
     }
     else if (choice == 3)
