@@ -14,23 +14,38 @@ while (true)
     Console.Write("Välj: ");
 
 int choice; 
-    if (!int.TryParse(Console.ReadLine(), out int choice))
-
+    if (!int.TryParse(Console.ReadLine(), out choice))
+    {
+        Console.WriteLine("Fel: Ogiltigt val!");
+        continue;
+    }
     if (choice == 1)
     {
         Console.Write("Namn: ");
         string name = Console.ReadLine();
         Console.Write("Pris: ");
-        int price = int.Parse(Console.ReadLine());
-        list.Add(new Item(name, price));
+        if (int.TryParse(Console.ReadLine(), out int price))
+        {
+         list.Add(new Item(name, price));   
+        }
+        else
+        {
+            Console.WriteLine("Fel: Ogiltigt price!");
+        }    
     }
     else if (choice == 2)
     {
         Console.Write("Nummer: ");
-        int number = int.TryParse(Console.ReadLine(), );
-        list.RemoveAt(number);
+        if(int.TryParse(Console.ReadLine(), out int number ));
+        {
+           list.RemoveAt(number); 
+        }
+        else
+        {
+         Console.WriteLine("Fel: Ogiltigt nummer!");   
+        }
     }
-    else if (choice == 3)
+    else if(choice == 3)
     {
         list.Save();
     }
