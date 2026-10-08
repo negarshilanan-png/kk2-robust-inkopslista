@@ -23,6 +23,11 @@ int choice;
     {
         Console.Write("Namn: ");
         string name = Console.ReadLine();
+
+        if  (string.IsNullOrWhiteSpace(name))
+        {
+            Console.WriteLine("Fel: Namnet kan inte vara tomt!");
+        }
         Console.Write("Pris: ");
         if (int.TryParse(Console.ReadLine(), out int price))
         {
