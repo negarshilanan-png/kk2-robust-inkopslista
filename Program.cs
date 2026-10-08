@@ -36,7 +36,7 @@ int choice;
     else if (choice == 2)
     {
         Console.Write("Nummer: ");
-        if(int.TryParse(Console.ReadLine(), out int number ));
+        if(int.TryParse(Console.ReadLine(), out int number ))
         {
            list.RemoveAt(number); 
         }
