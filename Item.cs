@@ -6,8 +6,14 @@ class Item
 
     public Item(string name, int price)
     {
-        Name = name;
-        Price = price;
+       if (string.IsNullOrWhiteSpace(name))
+        throw new ArgumentException("Namnet får inte vara tomt.");
+
+    if (price < 0)
+        throw new ArgumentOutOfRangeException(nameof(price), "Priset får inte vara negativt.");
+
+    Name = name.Trim();
+    Price = price;
     }
 
     public override string ToString()
