@@ -21,40 +21,37 @@ int choice;
         Console.WriteLine("Fel: Ogiltigt val!");
         continue;
     }
-    if (choice == 1)
-    {
-        Console.Write("Namn: ");
-        string name = Console.ReadLine();
+   if (choice == 1)
+{
+    Console.Write("Namn: ");
+    string name = Console.ReadLine();
 
-        if  (string.IsNullOrWhiteSpace(name))
-        {
-            Console.WriteLine("Fel: Namnet kan inte vara tomt!");
-        }
-        Console.Write("Pris: ");
-        if (!int.TryParse(Console.ReadLine(), out int price))
-        {
-            Console.WriteLine("Fel: Ogiltigt price!");
-        } 
-        else
-        {
-            try
-            {
-                Item newItem = new Item(name, price);
-                if (list.Add(newItem))
-                {
-                    Console.WriteLine("Varan ladas till!");
-                }
-                else
-                {
-                    Console.WriteLine($"Fel: Budgettaket på {list.BudgetCap} kr Överskrids");
-                }
-            }
-            catch (Exception Ex)
-            {
-                Console.WriteLine($"Fel: {Ex. Message}");
-            }
-        }   
+    Console.Write("Pris: ");
+    if (!int.TryParse(Console.ReadLine(), out int price))
+    {
+        Console.WriteLine("Fel: Ogiltigt pris!");
     }
+    else
+    {
+        try
+        {
+            Item newItem = new Item(name, price);
+            if (list.Add(newItem))
+            {
+                Console.WriteLine("Varan lades till!");
+            }
+            else
+            {
+                Console.WriteLine($"Fel: Budgettaket på {list.BudgetCap} kr överskrids!");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Fel: {ex.Message}");
+        }
+    }
+}
+
     else if (choice == 2)
     {
         Console.Write("Nummer: ");
