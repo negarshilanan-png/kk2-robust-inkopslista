@@ -51,7 +51,6 @@ int choice;
         }
     }
 }
-
     else if (choice == 2)
     {
         Console.Write("Nummer: ");
