@@ -9,10 +9,22 @@ class ShoppingList
         this.path = path;
     }
 
-    public void Add(Item item)
+    // Definiera ett budgettak på 2000 kr
+public double BudgetCap { get; set; } = 2000;
+
+// Lägger till en vara om den inte överskrider budgettaket
+public bool Add(Item item)
+{
+    // Kontrollera om den nya totalen överskrider budgeten
+    if (Total() + item.Price > BudgetCap)
     {
-        items.Add(item);
+        return false; // Kan inte lägga till varan
     }
+
+    items.Add(item);
+    return true; // Varan lades till
+}
+
 
     // Removes the item the user sees as number 1, 2, 3 ...
     public void RemoveAt(int number)
@@ -41,19 +53,21 @@ class ShoppingList
         return sum;
     }
 
-    // Looks up an item by its name. Returns null if there is no such item.
-    public Item Find(string name)
-    {
-        foreach (Item item in items)
-        {
-            if (item.Name == name)
-            {
-                return item;
-            }
-        }
+    // Söker efter en vara baserat på namn
+public Item Find(string name)
+{
+    if (string.IsNullOrWhiteSpace(name)) return null;
 
-        return null;
+    foreach (Item item in items)
+    {
+        // Jämför namn och rensar bort osynliga tecken
+        if (item.Name.Equals(name.Trim(), StringComparison.OrdinalIgnoreCase))
+        {
+            return item;
+        }
     }
+    return null;
+}
 
     public void Print()
     {
@@ -65,41 +79,75 @@ class ShoppingList
         Console.WriteLine($"Totalt: {Total()} kr");
     }
 
-    // Writes one item per line, as "price;name".
-    public void Save()
+    // Sparar alla varor till filen på ett säkert sätt
+public bool Save()
+{
+    try
     {
-        List<string> lines = new List<string>();
-
-        foreach (Item item in items)
+        using (StreamWriter writer = new StreamWriter(path))
         {
-            lines.Add($"{item.Price};{item.Name}");
+            foreach (Item item in items)
+            {
+                writer.WriteLine($"{item.Name};{item.Price}");
+            }
         }
-
-        try
-        {
-            File.WriteAllText(path, string.Join("\r\n", lines) + "\r\n");
-        }
-        catch
-        {
-        }
-
         Console.WriteLine("Listan är sparad.");
+        return true;
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine("Kunde inte spara listan: " + ex.Message);
+        return false;
+    }
+}
+
+    // Läser in varor från filen på ett enkelt och säkert sätt
+public void Load()
+{
+    // Kontrollera om filen finns
+    if (!File.Exists(path))
+    {
+        return;
     }
 
-    // Reads the file back into the list.
-    public void Load()
+    try
     {
-        if (!File. Exists(path))
-        {
-            return;
-        }
-        string text = File.ReadAllText(path);
-        string[] lines = text.Split('\n');
+        items.Clear(); // Rensar listan
+
+        // Läser alla rader från filen
+        string[] lines = File.ReadAllLines(path);
 
         foreach (string line in lines)
         {
-            string[] parts = line.Split(';');
-            items.Add(new Item(parts[1], int.Parse(parts[0])));
+            // Ta bort osynliga tecken som \r och extra utrymme
+            string cleanLine = line.Trim();
+
+            // Om raden är tom, hoppa över den
+            if (cleanLine == "")
+            {
+                continue;
+            }
+
+            // Dela raden vid semikolon: parts[0] = namn, parts[1] = pris
+            string[] parts = cleanLine.Split(';');
+
+            // Kontrollera att det finns två delar
+            if (parts.Length == 2)
+            {
+                string name = parts[0].Trim();
+                
+                // Omvandla priset säkert
+                if (int.TryParse(parts[1], out int price))
+                {
+                    items.Add(new Item(name, price));
+                }
+            }
         }
     }
+    catch (Exception ex)
+    {
+        Console.WriteLine("Fel vid inläsning: " + ex.Message);
+    }
+}
+
 }
