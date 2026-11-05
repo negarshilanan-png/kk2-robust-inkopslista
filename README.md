@@ -1,44 +1,48 @@
-# Inköpslista - Robust Konsolapplikation
+# Inlämningsuppgift 2: Robust Inköpslista
 
-Detta är en robust konsolapplikation i C# för att hantera en inköpslista. Programmet har refaktorerats för att förhindra krascher, hantera felaktiga inmatningar samt respektera ett budgettak.
+## Identifierade buggar och ågatder
 
-## Felrapport (Rättade buggar)
+1. **Tomma rader i filen kraschade `Load()`**
+   - **Vad som hände:** Om filen innehöll en tom rad kraschade programmet med ett undantag vid filinläsning.
+   - **Varför:** Metoden saknade kontroll för tomma rader efter `Trim()`.
+   - **Lösning:** Lagt till en kontroll med `cleanLine == ""` för att hoppa över tomma rader vid inläsning.
 
-1. **Filhantering (`FileNotFoundException`):**
-   - *Vad som hände:* Programmet kraschade vid start om filen `old_items.txt` inte fanns.
-   - *Varför:* Metoden försökte läsa en fil utan att kontrollera dess existens.
-   - *Lösning:* Lade till en kontroll med `File.Exists()` innan filen läses in.
+2. **Dolda `\r`-tecken vid filinläsning**
+   - **Vad som hände:** Osynliga tecken som `\r` låg kvar i strängarna vilket gjorde att sökfunktionen `Find()` misslyckades.
+   - **Varför:** Filen lästes in utan att rensa osynliga radbrytningstecken.
+   - **Lösning:** Använder `.Trim()` på alla inlästa rader samt jämför med `StringComparison.OrdinalIgnoreCase`.
 
-2. **Felaktig inmatning av siffror (`FormatException`):**
-   - *Vad som hände:* Programmet kraschade om användaren skrev bokstäver istället för siffror i menyn eller vid pris/index.
-   - *Varför:* `int.Parse` eller `double.Parse` kastade ett undantag vid ogiltig text.
-   - *Lösning:* Bytte ut `Parse` mot `int.TryParse` och `double.TryParse` för säker validering.
+3. **Tomt catch-block och felaktigt meddelande i `Save()`**
+   - **Vad som hände:** Programmet visade "Listan är sparad" även om filskrivningen misslyckades.
+   - **Varför:** `Save()` hade ett tomt `catch`-block och meddelandet låg utanför `try`.
+   - **Lösning:** Ändrat `Save()` så att den returnerar `bool`, flyttat framgångsmeddelandet till `try`-blocket och visar felmeddelande i `catch`.
 
-3. **Felaktigt startindex i totalsumma:**
-   - *Vad som hände:* Totalsumman räknades fel och hoppade över den första varan.
-   - *Varför:* Loopen i `Total()` startade från index `1` istället för `0`.
-   - *Lösning:* Ändrade loopens startindex till `i = 0`.
+4. **Saknad validering i `Item`-klassen**
+   - **Vad som hände:** Det gick att skapa varor med tomt namn eller negativt pris.
+   - **Varför:** Konstruktorn saknade valideringslogik.
+   - **Lösning:** Lagt till validering i konstruktorn på `Item` som kastar `ArgumentException` vid tomt namn och `ArgumentOutOfRangeException` vid negativt pris.
 
-4. **Index ur range vid borttagning (`ArgumentOutOfRangeException`):**
-   - *Vad som hände:* Programmet kraschade om man angav ett nummer som inte fanns i listan (t.ex. 10).
-   - *Varför:* Listans `RemoveAt` anropades utan gränskontroll.
-   - *Lösning:* Lade till en kontroll att indexet ligger mellan `0` och `items.Count - 1`.
+5. **Saknad felhantering vid skapande av vara i `Program.cs`**
+   - **Vad som hände:** Programmet kraschade om felaktig indata angavs.
+   - **Varför:** `new Item()` anropades utan felhantering.
+   - **Lösning:** Omslutit `new Item()` med ett `try-catch`-block för att fånga upp valideringsfel och visa tydliga felmeddelanden för användaren.
 
-5. **Sökfunktion saknade feedback:**
-   - *Vad som hände:* Om en vara inte hittades visades inget meddelande för användaren.
-   - *Varför:* Det saknades ett `else`-block när `Find()` returnerade `null`.
-   - *Lösning:* Lade till en kontroll för `null` och visar meddelandet `"Varan finns inte i listan."`.
+6. **Saknad hantering av budgettak**
+   - **Vad som hände:** ShoppingList hade inget budgettak.
+   - **Varför:** Det fanns ingen gräns för den totala summan i listan.
+   - **Lösning:** Lagt till en property `BudgetCap` (2000 kr) och ändrat `Add()` så att den returnerar `false` om budgeten överskrids.
 
-6. **Validering i konstruktorn (`Item`):**
-   - *Vad som hände:* Ogiltiga objekt (tomma namn eller negativa priser) kunde skapas.
-   - *Varför:* Konstruktorn saknade valideringslogik.
-   - *Lösning:* Konstruktorn kastar nu `ArgumentException` vid tomt namn och `ArgumentOutOfRangeException` vid negativt pris.
+---
 
-## Designval (Budgettak)
+## Designval för felhantering
 
-När budgettaket överskrids i `ShoppingList.Add()` har jag valt att **returnera `false`** (eller kasta ett undantag). 
+Jag har valt att låta `ShoppingList`-klassen returnera `bool` vid operationsfel (t.ex. i `Add` för budgettak och i `Save` för filskrivning) samt kasta undantag i `Item`-konstruktorn vid ogiltig indata.
 
-- *Motivering:* Genom att hantera situationen på detta sätt hålls `ShoppingList` ren från konsolutskrifter (`Console.WriteLine`). Det blir istället `Program.cs` ansvar att ta emot svaret och visa ett begripligt meddelande för användaren om att köpet överstiger budgeten.
+**Motivering:**
+- **Separation of Concerns:** Klasserna `Item` och `ShoppingList` ska inte direkt anropa `Console.WriteLine()`, eftersom de representerar logik och data, inte användargränssnittet.
+- **Robusthet:** Genom att kasta undantag i `Item` garanterar vi att inga ogiltiga objekt någonsin kan skapas. `Program.cs` ansvarar sedan för att fånga dessa undantag och presentera felmeddelanden på ett snyggt sätt för användaren.
+
+---
 
 ## Klassdiagram
 
@@ -50,18 +54,18 @@ classDiagram
 
     class ShoppingList {
         -List~Item~ items
-        -double budgetCap
+        -int budgetCap
         +Add(Item item) bool
         +RemoveAt(int index)
         +Find(string name) Item
-        +Total() double
-        +Save()
+        +Total() int
+        +Save() bool
     }
 
     class Item {
         +string Name
-        +double Price
-        +Item(string name, double price)
+        +int Price
+        +Item(string name, int price)
     }
 
     Program --> ShoppingList
