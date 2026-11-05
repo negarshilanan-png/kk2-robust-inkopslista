@@ -1,3 +1,5 @@
+using System.Linq.Expressions;
+
 ShoppingList list = new ShoppingList("items.txt");
 list.Load();
 
@@ -29,14 +31,29 @@ int choice;
             Console.WriteLine("Fel: Namnet kan inte vara tomt!");
         }
         Console.Write("Pris: ");
-        if (int.TryParse(Console.ReadLine(), out int price))
-        {
-         list.Add(new Item(name, price));   
-        }
-        else
+        if (!int.TryParse(Console.ReadLine(), out int price))
         {
             Console.WriteLine("Fel: Ogiltigt price!");
-        }    
+        } 
+        else
+        {
+            try
+            {
+                Item newItem = new Item(name, price);
+                if (list.Add(newItem))
+                {
+                    Console.WriteLine("Varan ladas till!");
+                }
+                else
+                {
+                    Console.WriteLine($"Fel: Budgettaket på {list.BudgetCap} kr Överskrids");
+                }
+            }
+            catch (Exception Ex)
+            {
+                Console.WriteLine($"Fel: {Ex. Message}");
+            }
+        }   
     }
     else if (choice == 2)
     {
