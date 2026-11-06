@@ -1,6 +1,8 @@
-using System.Linq.Expressions;
+using System;
 
 ShoppingList list = new ShoppingList("items.txt");
+
+// Läs in data från filen vid programstart
 list.Load();
 
 while (true)
@@ -15,58 +17,63 @@ while (true)
     Console.WriteLine("5. Avsluta");
     Console.Write("Välj: ");
 
-int choice; 
+    int choice; 
     if (!int.TryParse(Console.ReadLine(), out choice))
     {
         Console.WriteLine("Fel: Ogiltigt val!");
         continue;
     }
-   if (choice == 1)
-{
-    Console.Write("Namn: ");
-    string name = Console.ReadLine();
 
-    Console.Write("Pris: ");
-    if (!int.TryParse(Console.ReadLine(), out int price))
+    // Alternativ 1: Lägg till vara
+    if (choice == 1)
     {
-        Console.WriteLine("Fel: Ogiltigt pris!");
-    }
-    else
-    {
-        try
+        Console.Write("Namn: ");
+        string name = Console.ReadLine();
+
+        Console.Write("Pris: ");
+        if (!int.TryParse(Console.ReadLine(), out int price))
         {
-            Item newItem = new Item(name, price);
-            if (list.Add(newItem))
-            {
-                Console.WriteLine("Varan lades till!");
-            }
-            else
-            {
-                Console.WriteLine($"Fel: Budgettaket på {list.BudgetCap} kr överskrids!");
-            }
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Fel: {ex.Message}");
-        }
-    }
-}
-    else if (choice == 2)
-    {
-        Console.Write("Nummer: ");
-        if(int.TryParse(Console.ReadLine(), out int number ))
-        {
-           list.RemoveAt(number); 
+            Console.WriteLine("Fel: Ogiltigt pris!");
         }
         else
         {
-         Console.WriteLine("Fel: Ogiltigt nummer!");   
+            try
+            {
+                Item newItem = new Item(name, price);
+                if (list.Add(newItem))
+                {
+                    Console.WriteLine("Varan lades till!");
+                }
+                else
+                {
+                    Console.WriteLine($"Fel: Budgettaket på {list.BudgetCap} kr överskrids!");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Fel: {ex.Message}");
+            }
         }
     }
-    else if(choice == 3)
+    // Alternativ 2: Ta bort vara
+    else if (choice == 2)
+    {
+        Console.Write("Nummer: ");
+        if (int.TryParse(Console.ReadLine(), out int number))
+        {
+            list.RemoveAt(number);  
+        }
+        else
+        {
+           Console.WriteLine("Fel: Ogiltigt nummer!");   
+        }
+    }
+    // Alternativ 3: Spara till fil
+    else if (choice == 3)
     {
         list.Save();
     }
+    // Alternativ 4: Sök efter vara
     else if (choice == 4)
     {
         Console.Write("Namn att söka efter: ");
@@ -82,8 +89,13 @@ int choice;
             Console.WriteLine($"Hittade: {found}");
         }
     }
+    // Alternativ 5: Avsluta programmet
     else if (choice == 5)
     {
         break;
+    }
+    else
+    {
+        Console.WriteLine("Fel: Välj ett alternativ mellan 1 och 5.");
     }
 }
