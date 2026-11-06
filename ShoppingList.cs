@@ -1,3 +1,7 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
+
 // Holds the items and takes care of loading and saving them.
 class ShoppingList
 {
@@ -10,21 +14,20 @@ class ShoppingList
     }
 
     // Definiera ett budgettak på 2000 kr
-public double BudgetCap { get; set; } = 2000;
+    public double BudgetCap { get; set; } = 2000;
 
-// Lägger till en vara om den inte överskrider budgettaket
-public bool Add(Item item)
-{
-    // Kontrollera om den nya totalen överskrider budgeten
-    if (Total() + item.Price > BudgetCap)
+    // Lägger till en vara om den inte överskrider budgettaket
+    public bool Add(Item item)
     {
-        return false; // Kan inte lägga till varan
+        // Kontrollera om den nya totalen överskrider budgeten
+        if (Total() + item.Price > BudgetCap)
+        {
+            return false; // Kan inte lägga till varan
+        }
+
+        items.Add(item);
+        return true; // Varan lades till
     }
-
-    items.Add(item);
-    return true; // Varan lades till
-}
-
 
     // Removes the item the user sees as number 1, 2, 3 ...
     public void RemoveAt(int number)
@@ -32,7 +35,7 @@ public bool Add(Item item)
         int index = number - 1;
         if (index >= 0 && index < items.Count)
         {
-          items.RemoveAt(number - 1);  
+            items.RemoveAt(index);  
         }
         else
         {
@@ -44,30 +47,28 @@ public bool Add(Item item)
     public int Total()
     {
         int sum = 0;
-
         for (int i = 0; i < items.Count; i++)
         {
             sum += items[i].Price;
         }
-
         return sum;
     }
 
     // Söker efter en vara baserat på namn
-public Item Find(string name)
-{
-    if (string.IsNullOrWhiteSpace(name)) return null;
-
-    foreach (Item item in items)
+    public Item Find(string name)
     {
-        // Jämför namn och rensar bort osynliga tecken
-        if (item.Name.Equals(name.Trim(), StringComparison.OrdinalIgnoreCase))
+        if (string.IsNullOrWhiteSpace(name)) return null;
+
+        foreach (Item item in items)
         {
-            return item;
+            // Jämför namn och rensar bort osynliga tecken
+            if (item.Name.Equals(name.Trim(), StringComparison.OrdinalIgnoreCase))
+            {
+                return item;
+            }
         }
+        return null;
     }
-    return null;
-}
 
     public void Print()
     {
@@ -80,74 +81,80 @@ public Item Find(string name)
     }
 
     // Sparar alla varor till filen på ett säkert sätt
-public bool Save()
-{
-    try
+    public bool Save()
     {
-        using (StreamWriter writer = new StreamWriter(path))
+        try
         {
-            foreach (Item item in items)
+            using (StreamWriter writer = new StreamWriter(path))
             {
-                writer.WriteLine($"{item.Name};{item.Price}");
+                foreach (Item item in items)
+                {
+                    writer.WriteLine($"{item.Name};{item.Price}");
+                }
             }
+            Console.WriteLine("Listan är sparad.");
+            return true;
         }
-        Console.WriteLine("Listan är sparad.");
-        return true;
+        catch (Exception ex)
+        {
+            Console.WriteLine("Kunde inte spara listan: " + ex.Message);
+            return false;
+        }
     }
-    catch (Exception ex)
-    {
-        Console.WriteLine("Kunde inte spara listan: " + ex.Message);
-        return false;
-    }
-}
 
     // Läser in varor från filen på ett enkelt och säkert sätt
-public void Load()
-{
-    // Kontrollera om filen finns
-    if (!File.Exists(path))
+    public void Load()
     {
-        return;
-    }
-
-    try
-    {
-        items.Clear(); // Rensar listan
-
-        // Läser alla rader från filen
-        string[] lines = File.ReadAllLines(path);
-
-        foreach (string line in lines)
+        // Kontrollera om filen finns
+        if (!File.Exists(path))
         {
-            // Ta bort osynliga tecken som \r och extra utrymme
-            string cleanLine = line.Trim();
+            return;
+        }
 
-            // Om raden är tom, hoppa över den
-            if (cleanLine == "")
+        try
+        {
+            items.Clear(); // Rensar listan
+
+            // Läser alla rader från filen
+            string[] lines = File.ReadAllLines(path);
+
+            foreach (string line in lines)
             {
-                continue;
-            }
+                // Ta bort osynliga tecken som \r och extra utrymme
+                string cleanLine = line.Trim();
 
-            // Dela raden vid semikolon: parts[0] = namn, parts[1] = pris
-            string[] parts = cleanLine.Split(';');
-
-            // Kontrollera att det finns två delar
-            if (parts.Length == 2)
-            {
-                string name = parts[0].Trim();
-                
-                // Omvandla priset säkert
-                if (int.TryParse(parts[1], out int price))
+                // Om raden är tom, hoppa över den
+                if (string.IsNullOrEmpty(cleanLine))
                 {
-                    items.Add(new Item(name, price));
+                    continue;
+                }
+
+                // Dela raden vid semikolon: parts[0] = namn, parts[1] = pris
+                string[] parts = cleanLine.Split(';');
+
+                // Kontrollera att det finns två delar
+                if (parts.Length == 2)
+                {
+                    string name = parts[0].Trim();
+                    
+                    // Omvandla priset säkert
+                    if (int.TryParse(parts[1].Trim(), out int price))
+                    {
+                        try
+                        {
+                            items.Add(new Item(name, price));
+                        }
+                        catch
+                        {
+                            // Ignorera objekt om data är ogiltig
+                        }
+                    }
                 }
             }
         }
+        catch (Exception ex)
+        {
+            Console.WriteLine("Fel vid inläsning: " + ex.Message);
+        }
     }
-    catch (Exception ex)
-    {
-        Console.WriteLine("Fel vid inläsning: " + ex.Message);
-    }
-}
-
 }
