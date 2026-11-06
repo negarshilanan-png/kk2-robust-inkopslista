@@ -6,14 +6,23 @@ class Item
 
     public Item(string name, int price)
     {
-       if (string.IsNullOrWhiteSpace(name))
-        throw new ArgumentException("Namnet får inte vara tomt.");
+        // Rensa bort osynliga tecken och extra utrymme
+        string cleanName = name?.Trim();
 
-    if (price < 0)
-        throw new ArgumentOutOfRangeException(nameof(price), "Priset får inte vara negativt.");
+        // Validera att namnet inte är tomt eller endast innehåller mellanslag
+        if (string.IsNullOrWhiteSpace(cleanName))
+        {
+            throw new ArgumentException("Namnet får inte vara tomt.", nameof(name));
+        }
 
-    Name = name.Trim();
-    Price = price;
+        // Validera att priset inte är negativt
+        if (price < 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(price), "Priset får inte vara negativt.");
+        }
+
+        Name = cleanName;
+        Price = price;
     }
 
     public override string ToString()
